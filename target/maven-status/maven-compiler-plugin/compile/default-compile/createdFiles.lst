@@ -1,0 +1,14 @@
+at\mediaRatingsPlatform\service\RecommendationService.class
+at\mediaRatingsPlatform\handler\AbstractHandler.class
+at\mediaRatingsPlatform\handler\RecommendationHandler.class
+at\mediaRatingsPlatform\model\Media$MediaBuilder.class
+at\mediaRatingsPlatform\service\ProfileService.class
+at\mediaRatingsPlatform\handler\MediaHandler$1.class
+at\mediaRatingsPlatform\dao\ProfileDao.class
+at\mediaRatingsPlatform\handler\RatingHandler$1.class
+at\mediaRatingsPlatform\handler\AbstractHandler$HttpMethodEnum.class
+at\mediaRatingsPlatform\handler\ProfileHandler.class
+at\mediaRatingsPlatform\model\User$UserBuilder.class
+at\mediaRatingsPlatform\util\QueryUtil.class
+at\mediaRatingsPlatform\model\Rating$RatingBuilder.class
+at\mediaRatingsPlatform\handler\FavoriteHandler$1.class
