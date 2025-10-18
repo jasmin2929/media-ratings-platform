@@ -6,6 +6,7 @@ import at.mediaRatingsPlatform.util.TokenUtil;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -13,16 +14,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Handles user creation, lookup by username, and JWT token management.
  */
 public class UserDao {
-    private final Map<Integer, User> users = new HashMap<>();
-    private final Map<String, String> tokens = new HashMap<>();
-    private final AtomicInteger seq = new AtomicInteger(1);
+    private final Map<UUID, User> users = new HashMap<>();
 
     /**
      * Create a new User with a username and hashed password.
      */
     public User create(String username, String passwordHash) {
         User u = new User();
-        u.setId(seq.getAndIncrement());
+        u.setId(UUID.randomUUID());
         u.setUsername(username);
         u.setPasswordHash(passwordHash);
         users.put(u.getId(), u);
@@ -42,7 +41,7 @@ public class UserDao {
      * Generate and store a JWT token for a user.
      */
     public String storeToken(User u) {
-        return TokenUtil.generateJwt(u.getUsername());
+        return TokenUtil.generateJwt(u.getId());
     }
 
     /**
@@ -51,8 +50,8 @@ public class UserDao {
      */
     public User getByToken(String token) {
         try {
-            String username = TokenUtil.parseJwt(token);
-            return getByUsername(username);
+            UUID userId = TokenUtil.parseJwt(token);
+            return users.get(userId);
         } catch (Exception e) {
             return null; // invalid token
         }

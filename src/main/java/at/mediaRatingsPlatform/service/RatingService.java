@@ -9,6 +9,7 @@ import at.mediaRatingsPlatform.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class RatingService {
@@ -21,7 +22,7 @@ public class RatingService {
     }
 
 
-    public Rating create(int mediaId, int stars, String comment, User u){
+    public Rating create(UUID mediaId, int stars, String comment, User u){
         Media media = mediaDao.getById(mediaId);
         if (media == null) throw new RuntimeException("Media not found");
 
@@ -38,20 +39,23 @@ public class RatingService {
 
     // TODO: Add ratingStatus to update method, 1. dont repeat, 2. what about other statuses?
     // Confirm a rating (changes visibility)
-    public Rating confirm(int ratingId, int userId) {
+    public Rating confirm(UUID ratingId, UUID userId) {
         Rating rating = ratingDao.getById(ratingId);
-        if (rating == null) throw new RuntimeException("Rating not found");
-        if (rating.getUserId() != userId) throw new RuntimeException("Unauthorized");
+        if (rating == null)
+            throw new RuntimeException("Rating not found");
+        if (rating.getUserId() != userId)
+            throw new RuntimeException("Unauthorized");
         rating.setStatus(RatingStatusEnum.CONFIRMED);
         ratingDao.update(ratingId, rating);
         return rating;
     }
 
     // Edit a rating
-    public Rating update(int ratingId, User user, int stars, String comment) {
+    public Rating update(UUID ratingId, User user, int stars, String comment) {
         Rating rating = ratingDao.getById(ratingId);
         if (rating == null) throw new RuntimeException("Rating not found");
-        if (rating.getUserId() != user.getId()) throw new RuntimeException("Unauthorized");
+        if (!rating.getUserId().equals(user.getId()) )
+            throw new RuntimeException("Unauthorized");
         rating.setStars(stars);
         rating.setComment(comment);
         ratingDao.update(ratingId, rating);
@@ -59,39 +63,42 @@ public class RatingService {
     }
 
     // Delete a rating
-    public void delete(int ratingId, int userId) {
+    public void delete(UUID ratingId, int userId) {
         Rating rating = ratingDao.getById(ratingId);
-        if (rating == null) throw new RuntimeException("Rating not found");
-        if (rating.getUserId() != userId) throw new RuntimeException("Unauthorized");
+        if (rating == null)
+            throw new RuntimeException("Rating not found");
+        if (!rating.getUserId().equals(userId) )
+            throw new RuntimeException("Unauthorized");
         ratingDao.delete(ratingId);
     }
 
     //TODO: unlike a rating or media
     // Like a rating
-    public Rating like(int ratingId) {
+    public Rating like(UUID ratingId) {
         Rating rating = ratingDao.getById(ratingId);
-        if (rating == null) throw new RuntimeException("Rating not found");
+        if (rating == null)
+            throw new RuntimeException("Rating not found");
         rating.incrementLikes();
         ratingDao.update(ratingId, rating);
         return rating;
     }
 
     // Get all ratings for a media
-    public List<Rating> getAllByMediaId(int mediaId){
+    public List<Rating> getAllByMediaId(UUID mediaId){
         return ratingDao.getAllByMediaId(mediaId);
     }
 
     // Get all confirmed ratings for a media
-    public List<Rating> getAllConfirmedByMediaId(int mediaId) {
+    public List<Rating> getAllConfirmedByMediaId(UUID mediaId) {
         return ratingDao.getAllByMediaId(mediaId).stream()
                 .filter(r -> r.getStatus() == RatingStatusEnum.CONFIRMED)
                 .collect(Collectors.toList());
     }
 
     // Get all ratings of a user
-    public List<Rating> getAllByUserId(int userId) {
+    public List<Rating> getAllByUserId(UUID userId) {
         return ratingDao.getAll().stream()
-                .filter(r -> r.getUserId() == userId)
+                .filter(r -> r.getUserId().equals(userId))
                 .collect(Collectors.toList());
     }
 

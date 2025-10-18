@@ -7,7 +7,7 @@ import java.util.*;
 
 // TODO: extend from AbstractDao and use unique ids for profile
 public class ProfileDao {
-    private final Map<Integer, Profile> profiles = new HashMap<>();
+    private final Map<UUID, Profile> profiles = new HashMap<>();
 
     public Profile create(User user) {
         Profile profile = new Profile();
@@ -16,7 +16,7 @@ public class ProfileDao {
         return profile;
     }
 
-    public Profile getByUserId(int userId) {
+    public Profile getByUserId(UUID userId) {
         return profiles.get(userId);
     }
     /*
@@ -25,12 +25,12 @@ public class ProfileDao {
     }
     */
 
-
+    // TODO: change why sometimes param id and sometimes profile or user
     public void update(Profile profile) {
         profiles.put(profile.getUser().getId(), profile);
     }
 
-    public void delete(int userId) {
+    public void delete(UUID userId) {
         profiles.remove(userId);
     }
 }

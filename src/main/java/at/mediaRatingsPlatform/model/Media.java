@@ -3,6 +3,7 @@ package at.mediaRatingsPlatform.model;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
 
 @Data // Generates getters, setters, toString(), equals(), and hashCode()
@@ -11,8 +12,8 @@ import java.util.ArrayList;
 @Builder // Enables the builder pattern for easy and readable object creation
 public class Media {
 
-    private int id;
-    private int userId;
+    private UUID id;
+    private UUID userId;
     private String title;
     private String description;
     private MediaTypeEnum mediaType;

@@ -2,6 +2,7 @@ package at.mediaRatingsPlatform.model;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Data // Generates getters, setters, toString(), equals(), and hashCode() automatically for all fields
@@ -10,9 +11,9 @@ import java.time.LocalDateTime;
 @Builder // Allows building objects in a clean, readable way using the builder pattern
 public class Rating {
 
-    private int id;
-    private int mediaId;
-    private int userId;
+    private UUID id;
+    private UUID mediaId;
+    private UUID userId;
     private int stars;
     private String comment;
 

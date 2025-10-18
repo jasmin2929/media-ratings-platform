@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MediaHandler extends AbstractHandler implements HttpHandler {
     private final AuthService authService;
@@ -43,7 +44,15 @@ public class MediaHandler extends AbstractHandler implements HttpHandler {
                     case GET -> {
                         String query = exchange.getRequestURI().getQuery();
                         if (query != null && query.startsWith("id=")) {
-                            int id = Integer.parseInt(query.split("=")[1]);
+                            String idParam = query.split("=")[1];
+                            UUID id;
+                            try {
+                                id = UUID.fromString(idParam);
+                            } catch (IllegalArgumentException e) {
+                                safeError(exchange, 400, "Invalid media id format (expected UUID)");
+                                return;
+                            }
+
                             Media m = mediaService.get(id);
                             if (m == null) {
                                 error(exchange, 404, "Not found");
@@ -63,7 +72,14 @@ public class MediaHandler extends AbstractHandler implements HttpHandler {
                     case DELETE -> {
                         String query = exchange.getRequestURI().getQuery();
                         if (query != null && query.startsWith("id=")) {
-                            int id = Integer.parseInt(query.split("=")[1]);
+                            String idParam = query.split("=")[1];
+                            UUID id;
+                            try {
+                                id = UUID.fromString(idParam);
+                            } catch (IllegalArgumentException e) {
+                                safeError(exchange, 400, "Invalid media id format (expected UUID)");
+                                return;
+                            }
                             mediaService.delete(id, user);
                             respond(exchange, 200, Map.of("status", "deleted"));
                         } else {

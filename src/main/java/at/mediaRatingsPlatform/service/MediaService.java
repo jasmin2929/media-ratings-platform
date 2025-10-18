@@ -8,6 +8,7 @@ import at.mediaRatingsPlatform.model.User;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MediaService {
@@ -22,7 +23,7 @@ public class MediaService {
         return dao.create(m);
     }
 
-    public Media get(int id){
+    public Media get(UUID id){
         return dao.getById(id);
     }
 
@@ -32,14 +33,16 @@ public class MediaService {
 
     public void update(Media m, User u){
         Media existing = dao.getById(m.getId());
-        if (existing==null || existing.getUserId()!=u.getId()) throw new RuntimeException("forbidden");
+        if (existing==null || !existing.getUserId().equals(u.getId()))
+            throw new RuntimeException("forbidden");
         dao.update(existing.getId(), m);
     }
 
-    public void delete(int id, User u){
+    public void delete(UUID id, User u){
         Media existing = dao.getById(id);
         // TODO: throw exception, 400
-        if (existing==null || existing.getUserId()!=u.getId()) throw new RuntimeException("forbidden");
+        if (existing == null || !existing.getUserId().equals(u.getId()))
+            throw new RuntimeException("forbidden");
         dao.delete(id);
     }
 

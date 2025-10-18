@@ -6,6 +6,8 @@ import at.mediaRatingsPlatform.dao.ProfileDao;
 import at.mediaRatingsPlatform.model.Media;
 import at.mediaRatingsPlatform.model.Profile;
 
+import java.util.UUID;
+
 public class FavoriteService {
     private final FavoriteDao dao;
     private final MediaDao mediaDao;
@@ -19,7 +21,7 @@ public class FavoriteService {
 
     // TODO: Add favourite should be in user, not profile
     // Or maybe move to mediaService and media
-    public void add(int userId, int mediaId){
+    public void add(UUID userId, UUID mediaId){
         dao.add(userId, mediaId);
 
         Media media = mediaDao.getById(mediaId);
@@ -30,7 +32,7 @@ public class FavoriteService {
         }
     }
 
-    public void remove(int userId, int mediaId){
+    public void remove(UUID userId, UUID mediaId){
         dao.remove(userId, mediaId);
 
         Media media = mediaDao.getById(mediaId);

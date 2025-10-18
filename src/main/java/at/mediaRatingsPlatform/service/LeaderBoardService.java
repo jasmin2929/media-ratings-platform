@@ -25,7 +25,7 @@ public class LeaderBoardService {
      */
     public List<Map<String, Object>> getLeaderBoard() {
         // Count ratings per user
-        Map<Integer, Integer> counts = new HashMap<>();
+        Map<UUID, Integer> counts = new HashMap<>();
         for (Rating r : ratingDao.getAll()) {
             counts.put(r.getUserId(), counts.getOrDefault(r.getUserId(), 0) + 1);
         }

@@ -8,6 +8,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Handles HTTP requests for adding or removing media favorites.
@@ -38,10 +39,16 @@ public class FavoriteHandler extends AbstractHandler implements HttpHandler {
         // make sure user is authorized
         withAuthenticatedUser(ex, authService, (exchange, user) -> {
 
-            // Use HandlerUtil helper to safely get the mediaId query parameter
-            // Returns null and sends a 400 Bad Request if missing/invalid
-            Integer mediaId = Integer.parseInt(getQueryParam(exchange, "mediaId"));
-            if (mediaId == null) return; // error already sent by helper
+            // Parse UUID mediaId from query parameter
+            String mediaIdParam = getQueryParam(exchange, "mediaId");
+            if (mediaIdParam == null) return; // error already sent by helper
+            UUID mediaId;
+            try {
+                mediaId = UUID.fromString(mediaIdParam);
+            } catch (IllegalArgumentException e) {
+                safeError(exchange, 400, "Invalid mediaId format (expected UUID)");
+                return;
+            }
 
             try {
                 HttpMethodEnum method = HttpMethodEnum.fromString(exchange.getRequestMethod());

@@ -10,11 +10,11 @@ public class FavoriteDao {
     // Storage for favorites in the format "userId:mediaId"
     private final Set<String> favorites = new HashSet<>();
 
-    public void add(int userId, int mediaId) {
+    public void add(UUID userId, UUID mediaId) {
         favorites.add(userId + ":" + mediaId);
     }
 
-    public void remove(int userId, int mediaId) {
+    public void remove(UUID userId, UUID mediaId) {
         favorites.remove(userId + ":" + mediaId);
     }
 

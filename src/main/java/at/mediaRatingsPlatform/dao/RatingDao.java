@@ -10,7 +10,7 @@ public class RatingDao extends AbstractDao<Rating> {
      */
     @Override
     public Rating create(Rating r) {
-        r.setId(seq.getAndIncrement());
+        r.setId(UUID.randomUUID());
         entities.put(r.getId(), r);
         return r;
     }
@@ -18,10 +18,10 @@ public class RatingDao extends AbstractDao<Rating> {
     /**
      * Get all ratings associated with a given media ID.
      */
-    public List<Rating> getAllByMediaId(int mediaId) {
+    public List<Rating> getAllByMediaId(UUID mediaId) {
         List<Rating> result = new ArrayList<>();
         for (Rating r : entities.values()) {
-            if (r.getMediaId() == mediaId) result.add(r);
+            if (r.getMediaId().equals(mediaId)) result.add(r);
         }
         return result;
     }

@@ -10,15 +10,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class AbstractDao<T> {
     // Storage for entities using their ID as the key
-    protected final Map<Integer, T> entities = new HashMap<>();
+    protected final Map<UUID, T> entities = new HashMap<>();
     // Atomic sequence to generate unique IDs
     protected final AtomicInteger seq = new AtomicInteger(1);
 
     // Abstract because each DAO must define how the entity ID is assigned and stored.
     public abstract T create(T entity);
 
-    //TODO: use UUID v7
-    public T getById(int id) {
+    public T getById(UUID id) {
         return entities.get(id);
     }
 
@@ -26,11 +25,11 @@ public abstract class AbstractDao<T> {
         return new ArrayList<>(entities.values());
     }
 
-    public void update(int id, T entity) {
+    public void update(UUID id, T entity) {
         entities.put(id, entity);
     }
 
-    public void delete(int id) {
+    public void delete(UUID id) {
         entities.remove(id);
     }
 }

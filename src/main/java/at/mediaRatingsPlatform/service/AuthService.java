@@ -23,7 +23,7 @@ public class AuthService {
     public String login(String username, String password){
         User u = userDao.getByUsername(username);
 
-        if (u==null || !PasswordUtil.verify(password, u.getPasswordHash()))
+        if (u == null || !PasswordUtil.verify(password, u.getPasswordHash()))
             throw new RuntimeException("Invalid credentials");
 
         return userDao.storeToken(u);
