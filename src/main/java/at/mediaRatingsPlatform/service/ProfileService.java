@@ -2,6 +2,7 @@ package at.mediaRatingsPlatform.service;
 
 import at.mediaRatingsPlatform.dao.ProfileDao;
 import at.mediaRatingsPlatform.dao.UserDao;
+import at.mediaRatingsPlatform.exception.NotFoundException;
 import at.mediaRatingsPlatform.model.Profile;
 import at.mediaRatingsPlatform.model.User;
 
@@ -22,9 +23,9 @@ public class ProfileService {
      */
     public Profile getByUserId(UUID userId) {
         Profile profile = profileDao.getByUserId(userId);
-        if (profile == null) {
+        if (profile == null)
             profile = profileDao.create(userId);
-        }
+
         return profile;
     }
 
@@ -33,9 +34,8 @@ public class ProfileService {
      */
     public Profile update(UUID userId, String bio, String avatarUrl) {
         Profile profile = profileDao.getByUserId(userId);
-        if (profile == null) {
+        if (profile == null)
             profile = profileDao.create(userId);
-        }
 
         profile.setBio(bio);
         profile.setAvatarUrl(avatarUrl);
@@ -44,11 +44,11 @@ public class ProfileService {
         return profile;
     }
 
-    public boolean delete(UUID userId) {
+    public void delete(UUID userId) {
         Profile profile = profileDao.getByUserId(userId);
-        if (profile == null) return false;
+        if (profile == null)
+            throw new NotFoundException("Profile not found");
 
         profileDao.delete(profile.getId());
-        return true;
     }
 }

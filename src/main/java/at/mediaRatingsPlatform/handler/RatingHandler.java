@@ -1,5 +1,7 @@
 package at.mediaRatingsPlatform.handler;
 
+import at.mediaRatingsPlatform.exception.BadRequestException;
+import at.mediaRatingsPlatform.model.Media;
 import at.mediaRatingsPlatform.model.Rating;
 import at.mediaRatingsPlatform.model.User;
 import at.mediaRatingsPlatform.service.AuthService;
@@ -33,12 +35,10 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
         }
 
         withAuthenticatedUser(ex, authService, (exchange, user) -> {
-            try {
+            handleSafely(exchange, () -> {
                 HttpMethodEnum method = HttpMethodEnum.fromString(exchange.getRequestMethod());
-                if (method == null) {
-                    safeError(exchange, 405, "Method not allowed");
-                    return;
-                }
+                if (method == null)
+                    throw new BadRequestException("Unsupported method");
 
                 String query = exchange.getRequestURI().getQuery();
                 String path = exchange.getRequestURI().getPath();
@@ -51,18 +51,10 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                     case POST -> {
                         Map<String, Object> body = JsonUtil.readJson(exchange, Map.class);
                         String mediaIdStr = (String) body.get("mediaId");
-                        if (mediaIdStr == null) {
-                            safeError(exchange, 400, "Missing mediaId");
-                            return;
-                        }
+                        if (mediaIdStr == null)
+                            throw new BadRequestException("Missing mediaId");
 
-                        UUID mediaId;
-                        try {
-                            mediaId = UUID.fromString(mediaIdStr);
-                        } catch (IllegalArgumentException e) {
-                            safeError(exchange, 400, "Invalid mediaId format (expected UUID)");
-                            return;
-                        }
+                        UUID mediaId = UUID.fromString(mediaIdStr);
 
                         int stars = (int) body.get("stars");
                         String comment = (String) body.get("comment");
@@ -75,37 +67,25 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                     // GET -> Retrieve ratings by mediaId or userId
                     // ============================================================
                     case GET -> {
-                        if (query == null || query.isEmpty()) {
-                            safeError(exchange, 400, "Missing query parameter (mediaId or userId required)");
-                            return;
-                        }
+                        if (query == null || query.isEmpty())
+                            throw new BadRequestException("Missing query parameter (mediaId or userId required)");
 
                         Map<String, String> params = QueryUtil.parseQuery(query);
 
                         if (query.contains("mediaId=")) {
-                            String mediaIdParam = QueryUtil.parseQuery(query).get("mediaId");
-                            if (mediaIdParam == null) {
-                                safeError(ex, 400, "Missing mediaId");
-                                return;
-                            }
-                            UUID mediaId = UUID.fromString(mediaIdParam);
+                            UUID mediaId = UUID.fromString(QueryUtil.parseQuery(query).get("mediaId"));
                             List<Rating> ratings = ratingService.getAllByMediaId(mediaId);
                             respond(exchange, 200, ratings);
                         }
                         else if (query.contains("userId=")) {
-                            String userIdParam = QueryUtil.parseQuery(query).get("userId");
-                            if (userIdParam == null) {
-                                safeError(exchange, 400, "Missing userId");
-                                return;
-                            }
-                            UUID userId = UUID.fromString(userIdParam);
-                            System.out.println("Received userId query: " + userId);
+                            UUID userId = UUID.fromString(QueryUtil.parseQuery(query).get("userId"));
+                            //System.out.println("Received userId query: " + userId);
 
                             List<Rating> ratings = ratingService.getAllByUserId(userId);
                             respond(exchange, 200, ratings);
                         }
                         else {
-                            safeError(exchange, 400, "Invalid query parameter (expected mediaId or userId)");
+                            throw new BadRequestException("Invalid query parameter (expected mediaId or userId)");
                         }
                     }
 
@@ -122,13 +102,13 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                         if (parts.length < 5) {
                             Map<String, Object> body = JsonUtil.readJson(exchange, Map.class);
                             String ratingIdStr = (String) body.get("ratingId");
-                            if (ratingIdStr == null) {
-                                safeError(exchange, 400, "Missing ratingId");
-                                return;
-                            }
+                            if (ratingIdStr == null)
+                                throw new BadRequestException("Missing ratingId");
+
                             UUID ratingId = UUID.fromString(ratingIdStr);
                             int stars = (int) body.get("stars");
                             String comment = (String) body.get("comment");
+
                             Rating updated = ratingService.update(ratingId, user, stars, comment);
                             respond(exchange, 200, updated);
                             return;
@@ -138,10 +118,8 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                         UUID ratingId = UUID.fromString(parts[3]);
                         String action = parts.length > 4 ? parts[4] : null;
 
-                        if (action == null) {
-                            safeError(exchange, 400, "Missing action segment");
-                            return;
-                        }
+                        if (action == null)
+                            throw new BadRequestException("Missing action segment");
 
                         switch (action) {
                             case "like" -> {
@@ -152,16 +130,12 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                                 Rating confirmed = ratingService.confirm(ratingId, user.getId());
                                 respond(exchange, 200, confirmed);
                             }
-                            default -> safeError(exchange, 400, "Unknown action: " + action);
+                            default -> throw new BadRequestException("Unknown action: " + action);
                         }
                     }
-
-                    default -> safeError(exchange, 405, "Method not allowed");
                 }
 
-            } catch (Exception e) {
-                safeError(exchange, 400, e.getMessage());
-            }
+            });
         });
     }
 }

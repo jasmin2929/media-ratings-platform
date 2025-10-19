@@ -1,6 +1,8 @@
 package at.mediaRatingsPlatform.service;
 
 import at.mediaRatingsPlatform.dao.MediaDao;
+import at.mediaRatingsPlatform.exception.ForbiddenException;
+import at.mediaRatingsPlatform.exception.NotFoundException;
 import at.mediaRatingsPlatform.model.GenreEnum;
 import at.mediaRatingsPlatform.model.Media;
 import at.mediaRatingsPlatform.model.MediaTypeEnum;
@@ -24,7 +26,10 @@ public class MediaService {
     }
 
     public Media get(UUID id){
-        return dao.getById(id);
+        Media media = dao.getById(id);
+        if (media == null)
+            throw new NotFoundException("Media not found");
+        return media;
     }
 
     public List<Media> list(){
@@ -33,16 +38,19 @@ public class MediaService {
 
     public void update(Media m, User u){
         Media existing = dao.getById(m.getId());
-        if (existing==null || !existing.getUserId().equals(u.getId()))
-            throw new RuntimeException("forbidden");
+        if (existing == null)
+            throw new NotFoundException("Media not found");
+        if (!existing.getUserId().equals(u.getId()))
+            throw new ForbiddenException("Not allowed to edit this media");
         dao.update(existing.getId(), m);
     }
 
     public void delete(UUID id, User u){
         Media existing = dao.getById(id);
-        // TODO: throw exception, 400
-        if (existing == null || !existing.getUserId().equals(u.getId()))
-            throw new RuntimeException("forbidden");
+        if (existing == null)
+            throw new NotFoundException("Media not found");
+        if (!existing.getUserId().equals(u.getId()))
+            throw new ForbiddenException("Not allowed to delete this media");
         dao.delete(id);
     }
 

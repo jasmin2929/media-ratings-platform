@@ -25,11 +25,9 @@ public class LeaderboardHandler extends AbstractHandler implements HttpHandler {
             return; // 405 already handled by validateMethod
         }
 
-        try {
+        handleSafely(ex, () -> {
             List<Map<String, Object>> leaderboard = service.getLeaderBoard();
             respond(ex, 200, leaderboard);
-        } catch (Exception e) {
-            error(ex, 500, "Internal server error: " + e.getMessage());
-        }
+        });
     }
 }

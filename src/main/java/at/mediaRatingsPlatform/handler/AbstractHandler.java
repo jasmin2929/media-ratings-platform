@@ -1,5 +1,7 @@
 package at.mediaRatingsPlatform.handler;
 
+import at.mediaRatingsPlatform.exception.AppException;
+import at.mediaRatingsPlatform.exception.ThrowingRunnable;
 import at.mediaRatingsPlatform.model.User;
 import at.mediaRatingsPlatform.service.AuthService;
 import at.mediaRatingsPlatform.util.JsonUtil;
@@ -97,5 +99,30 @@ public abstract class AbstractHandler {
         }
         return true;
     }
+
+    /**
+     * Safely executes a block of handler logic and provides centralized exception handling.
+     *
+     * This method ensures that:
+     * - All domain-specific exceptions (AppException and subclasses) are handled with the proper HTTP status code.
+     * - Common validation issues (IllegalArgumentException) are converted into HTTP 400 responses.
+     * - IO errors (e.g., during JSON parsing or writing) are converted into HTTP 500 responses.
+     * - Any other unexpected exception is caught and reported as HTTP 500.
+     *
+     * By using this wrapper, handlers can remain clean and declarative without repetitive try/catch blocks.
+     *
+     * @param ex     the HTTP exchange
+     * @param logic  the business logic to execute safely
+     */
+    protected void handleSafely(HttpExchange ex, ThrowingRunnable logic) {
+        try {
+            logic.run();
+        } catch (AppException e) {
+            safeError(ex, e.getStatusCode(), e.getMessage());
+        } catch (Exception e) {
+            safeError(ex, 500, "Internal server error: " + e.getMessage());
+        }
+    }
+
 
 }

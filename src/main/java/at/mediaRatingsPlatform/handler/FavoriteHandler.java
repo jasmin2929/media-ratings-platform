@@ -1,5 +1,6 @@
 package at.mediaRatingsPlatform.handler;
 
+import at.mediaRatingsPlatform.exception.BadRequestException;
 import at.mediaRatingsPlatform.service.AuthService;
 import at.mediaRatingsPlatform.service.FavoriteService;
 import com.sun.net.httpserver.HttpExchange;
@@ -39,19 +40,24 @@ public class FavoriteHandler extends AbstractHandler implements HttpHandler {
         // make sure user is authorized
         withAuthenticatedUser(ex, authService, (exchange, user) -> {
 
-            // Parse UUID mediaId from query parameter
-            String mediaIdParam = getQueryParam(exchange, "mediaId");
-            if (mediaIdParam == null) return; // error already sent by helper
-            UUID mediaId;
-            try {
-                mediaId = UUID.fromString(mediaIdParam);
-            } catch (IllegalArgumentException e) {
-                safeError(exchange, 400, "Invalid mediaId format (expected UUID)");
-                return;
-            }
+            handleSafely(exchange, () -> {
+                // Parse UUID mediaId from query parameter
+                String mediaIdParam = getQueryParam(exchange, "mediaId");
+                if (mediaIdParam == null)
+                    throw new BadRequestException("Missing mediaId");
 
-            try {
+                UUID mediaId;
+                try {
+                    mediaId = UUID.fromString(mediaIdParam);
+                } catch (IllegalArgumentException e) {
+                    throw new BadRequestException("Invalid mediaId format (expected UUID)");
+                }
+
+
                 HttpMethodEnum method = HttpMethodEnum.fromString(exchange.getRequestMethod());
+                if (method == null)
+                    throw new BadRequestException("Unsupported method");
+
                 // Route the request based on HTTP method
                 switch (method) {
                     case POST -> {
@@ -65,10 +71,7 @@ public class FavoriteHandler extends AbstractHandler implements HttpHandler {
                         respond(exchange, 200, Map.of("status", "removed"));
                     }
                 }
-            } catch (Exception e) {
-                // Handle unexpected errors
-                safeError(exchange, 500, "Internal server error: " + e.getMessage());
-            }
+            });
         });
     }
 }

@@ -1,5 +1,6 @@
 package at.mediaRatingsPlatform.handler;
 
+import at.mediaRatingsPlatform.exception.BadRequestException;
 import at.mediaRatingsPlatform.model.Media;
 import at.mediaRatingsPlatform.model.User;
 import at.mediaRatingsPlatform.service.AuthService;
@@ -32,67 +33,47 @@ public class MediaHandler extends AbstractHandler implements HttpHandler {
         }
 
         withAuthenticatedUser(ex, authService, (exchange, user) -> {
-            try {
+            handleSafely(exchange, () -> {
                 HttpMethodEnum method = HttpMethodEnum.fromString(exchange.getRequestMethod());
+                if (method == null)
+                    throw new BadRequestException("Unsupported method");
 
                 switch (method) {
                     case POST -> {
-                        Media m = JsonUtil.readJson(exchange, Media.class);
-                        Media created = mediaService.create(m, user);
+                        Media media = JsonUtil.readJson(exchange, Media.class);
+                        Media created = mediaService.create(media, user);
                         respond(exchange, 201, created);
                     }
                     case GET -> {
                         String query = exchange.getRequestURI().getQuery();
                         if (query != null && query.startsWith("id=")) {
-                            String idParam = query.split("=")[1];
-                            UUID id;
-                            try {
-                                id = UUID.fromString(idParam);
-                            } catch (IllegalArgumentException e) {
-                                safeError(exchange, 400, "Invalid media id format (expected UUID)");
-                                return;
-                            }
-
-                            Media m = mediaService.get(id);
-                            if (m == null) {
-                                error(exchange, 404, "Not found");
-                            } else {
-                                respond(exchange, 200, m);
-                            }
+                            UUID id = UUID.fromString(query.split("=")[1]);
+                            Media media = mediaService.get(id);
+                            if (media == null)
+                                throw new BadRequestException("Media not found");
+                            respond(exchange, 200, media);
                         } else {
                             List<Media> all = mediaService.list();
                             respond(exchange, 200, all);
                         }
                     }
                     case PUT -> {
-                        Media m = JsonUtil.readJson(exchange, Media.class);
-                        mediaService.update(m, user);
-                        respond(exchange, 200, m);
+                        Media media = JsonUtil.readJson(exchange, Media.class);
+                        mediaService.update(media, user);
+                        respond(exchange, 200, media);
                     }
                     case DELETE -> {
                         String query = exchange.getRequestURI().getQuery();
-                        if (query != null && query.startsWith("id=")) {
-                            String idParam = query.split("=")[1];
-                            UUID id;
-                            try {
-                                id = UUID.fromString(idParam);
-                            } catch (IllegalArgumentException e) {
-                                safeError(exchange, 400, "Invalid media id format (expected UUID)");
-                                return;
-                            }
-                            mediaService.delete(id, user);
-                            respond(exchange, 200, Map.of("status", "deleted"));
-                        } else {
-                            error(exchange, 400, "Missing id");
-                        }
+                        if (query == null)
+                            throw new BadRequestException("Missing id");
+
+                        UUID id = UUID.fromString(query.split("=")[1]);
+                        mediaService.delete(id, user);
+                        respond(exchange, 200, Map.of("status", "deleted"));
                     }
                 }
+            });
 
-            }
-            // TODO: seperate the different exceptions
-            catch (Exception e) {
-                safeError(exchange, 400, e.getMessage());
-            }
         });
     }
 }

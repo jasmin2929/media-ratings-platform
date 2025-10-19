@@ -25,7 +25,7 @@ public class RegisterHandler extends AbstractHandler implements HttpHandler {
             return; // 405 already sent by validateMethod
         }
 
-        try {
+        handleSafely(exchange, () -> {
             // Parse request body
             Map<String, String> body = JsonUtil.readJson(exchange, Map.class);
             String username = body.get("username");
@@ -40,9 +40,6 @@ public class RegisterHandler extends AbstractHandler implements HttpHandler {
                     "username", user.getUsername()
             ));
 
-        } catch (Exception e) {
-            // Handle errors such as invalid input
-            safeError(exchange, 400, e.getMessage());
-        }
+        });
     }
 }

@@ -1,5 +1,6 @@
 package at.mediaRatingsPlatform.handler;
 
+import at.mediaRatingsPlatform.exception.BadRequestException;
 import at.mediaRatingsPlatform.model.Profile;
 import at.mediaRatingsPlatform.model.User;
 import at.mediaRatingsPlatform.service.AuthService;
@@ -32,18 +33,13 @@ public class ProfileHandler extends AbstractHandler implements HttpHandler {
         }
 
         withAuthenticatedUser(ex, authService, (exchange, user) -> {
-            try {
+            handleSafely(exchange, () -> {
                 HttpMethodEnum method = HttpMethodEnum.fromString(exchange.getRequestMethod());
+                if (method == null)
+                    throw new BadRequestException("Unsupported method");
 
                 switch (method) {
-                    case GET -> {
-                        Profile profile = profileService.getByUserId(user.getId());
-                        if (profile == null) {
-                            safeError(exchange, 404, "Profile not found");
-                        } else {
-                            respond(exchange, 200, profile);
-                        }
-                    }
+                    case GET -> respond(exchange, 200, profileService.getByUserId(user.getId()));
 
                     case PUT -> {
                         Map<String, Object> body = JsonUtil.readJson(exchange, Map.class);
@@ -55,19 +51,11 @@ public class ProfileHandler extends AbstractHandler implements HttpHandler {
                     }
 
                     case DELETE -> {
-                        boolean deleted = profileService.delete(user.getId());
-                        if (deleted) {
-                            respond(exchange, 200, Map.of("status", "deleted"));
-                        } else {
-                            safeError(exchange, 404, "Profile not found");
-                        }
+                        profileService.delete(user.getId());
+                        respond(exchange, 200, Map.of("status", "deleted"));
                     }
-
-                    default -> safeError(exchange, 405, "Method not allowed");
                 }
-            } catch (Exception e) {
-                safeError(exchange, 400, e.getMessage());
-            }
+            });
         });
     }
 }

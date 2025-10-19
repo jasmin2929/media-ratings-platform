@@ -2,6 +2,8 @@ package at.mediaRatingsPlatform.service;
 
 import at.mediaRatingsPlatform.dao.MediaDao;
 import at.mediaRatingsPlatform.dao.RatingDao;
+import at.mediaRatingsPlatform.exception.ForbiddenException;
+import at.mediaRatingsPlatform.exception.NotFoundException;
 import at.mediaRatingsPlatform.model.Media;
 import at.mediaRatingsPlatform.model.Rating;
 import at.mediaRatingsPlatform.model.RatingStatusEnum;
@@ -24,7 +26,8 @@ public class RatingService {
 
     public Rating create(UUID mediaId, int stars, String comment, User user){
         Media media = mediaDao.getById(mediaId);
-        if (media == null) throw new RuntimeException("Media not found");
+        if (media == null)
+            throw new NotFoundException("Media not found");
 
         Rating rating = new Rating();
         rating.setMediaId(mediaId);
@@ -42,10 +45,12 @@ public class RatingService {
     public Rating confirm(UUID ratingId, UUID userId) {
         Rating rating = ratingDao.getById(ratingId);
         if (rating == null)
-            throw new RuntimeException("Rating not found");
+            throw new NotFoundException("Rating not found");
+
         Media media = mediaDao.getById(rating.getMediaId());
         if (!media.getUserId().equals(userId))
-            throw new RuntimeException("Unauthorized");
+            throw new ForbiddenException("You are not allowed to confirm this rating");
+
         rating.setStatus(RatingStatusEnum.CONFIRMED);
         ratingDao.update(ratingId, rating);
         return rating;
@@ -54,9 +59,11 @@ public class RatingService {
     // Edit a rating
     public Rating update(UUID ratingId, User user, int stars, String comment) {
         Rating rating = ratingDao.getById(ratingId);
-        if (rating == null) throw new RuntimeException("Rating not found");
-        if (!rating.getUserId().equals(user.getId()) )
-            throw new RuntimeException("Unauthorized");
+        if (rating == null)
+            throw new NotFoundException("Rating not found");
+        if (!rating.getUserId().equals(user.getId()))
+            throw new ForbiddenException("You can only edit your own ratings");
+
         rating.setStars(stars);
         rating.setComment(comment);
         ratingDao.update(ratingId, rating);
@@ -67,9 +74,10 @@ public class RatingService {
     public void delete(UUID ratingId, int userId) {
         Rating rating = ratingDao.getById(ratingId);
         if (rating == null)
-            throw new RuntimeException("Rating not found");
-        if (!rating.getUserId().equals(userId) )
-            throw new RuntimeException("Unauthorized");
+            throw new NotFoundException("Rating not found");
+        if (!rating.getUserId().equals(userId))
+            throw new ForbiddenException("You can only delete your own ratings");
+
         ratingDao.delete(ratingId);
     }
 
@@ -78,7 +86,8 @@ public class RatingService {
     public Rating like(UUID ratingId) {
         Rating rating = ratingDao.getById(ratingId);
         if (rating == null)
-            throw new RuntimeException("Rating not found");
+            throw new NotFoundException("Rating not found");
+
         rating.incrementLikes();
         ratingDao.update(ratingId, rating);
         return rating;

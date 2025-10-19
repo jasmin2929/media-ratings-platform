@@ -28,14 +28,12 @@ public class RecommendationHandler extends AbstractHandler implements HttpHandle
         }
 
         withAuthenticatedUser(exchange, authService, (ex, user) -> {
-            try {
+            handleSafely(ex, () -> {
                 // Get personalized recommendations for the authenticated user
                 var recommendations = recommendationService.getRecommendations(user);
                 respond(ex, 200, recommendations);
 
-            } catch (Exception e) {
-                safeError(ex, 400, e.getMessage());
-            }
+            });
         });
     }
 }

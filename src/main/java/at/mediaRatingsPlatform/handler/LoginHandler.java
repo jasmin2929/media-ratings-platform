@@ -21,7 +21,7 @@ public class LoginHandler extends AbstractHandler implements HttpHandler {
             return; // 405 already handled by validateMethod
         }
 
-        try {
+        handleSafely(ex, () -> {
             Map<String, String> body = JsonUtil.readJson(ex, Map.class);
             String username = body.get("username");
             String password = body.get("password");
@@ -29,8 +29,6 @@ public class LoginHandler extends AbstractHandler implements HttpHandler {
             String token = authService.login(username, password);
             respond(ex, 200, Map.of("token", token));
 
-        } catch (Exception e) {
-            error(ex, 401, e.getMessage());
-        }
+        });
     }
 }

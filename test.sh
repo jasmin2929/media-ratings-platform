@@ -70,7 +70,7 @@ do
   USERS[$username]=$(login $username secret)
   echo "Token for $username: ${USERS[$username]}"
 done
-echo ""
+echo -e "\n"
 
 # --------------------------------------------------------------
 # 2. Create sample media entries for testing CRUD operations
@@ -137,7 +137,6 @@ do
     echo -e "\n"
   done
 done
-echo -e "\n"
 
 # --------------------------------------------------------------
 # 4. Like random ratings (simulates social interaction)

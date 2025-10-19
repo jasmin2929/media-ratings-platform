@@ -2,6 +2,8 @@ package at.mediaRatingsPlatform.service;
 
 import at.mediaRatingsPlatform.dao.ProfileDao;
 import at.mediaRatingsPlatform.dao.UserDao;
+import at.mediaRatingsPlatform.exception.BadRequestException;
+import at.mediaRatingsPlatform.exception.UnauthorizedException;
 import at.mediaRatingsPlatform.model.User;
 import at.mediaRatingsPlatform.util.PasswordUtil;
 
@@ -15,8 +17,11 @@ public class AuthService {
     }
 
     public User register(String username, String password){
-        if (userDao.getByUsername(username)!=null)
-            throw new RuntimeException("Username exists");
+        if (username == null || username.isBlank() || password == null || password.isBlank())
+            throw new BadRequestException("Username and password are required");
+
+        if (userDao.getByUsername(username) != null)
+            throw new BadRequestException("Username already exists");
 
         // Hash the password before storing it
         String passwordHash = PasswordUtil.hash(password);
@@ -32,7 +37,7 @@ public class AuthService {
         User u = userDao.getByUsername(username);
 
         if (u == null || !PasswordUtil.verify(password, u.getPasswordHash()))
-            throw new RuntimeException("Invalid credentials");
+            throw new UnauthorizedException("Invalid username or password");
 
         return userDao.storeToken(u);
     }
@@ -40,7 +45,7 @@ public class AuthService {
     public User getUserByToken(String token){
         User u = userDao.getByToken(token);
         if (u==null)
-            throw new RuntimeException("unauthorized");
+            throw new UnauthorizedException("Unauthorized: invalid token");
         return u;
     }
 

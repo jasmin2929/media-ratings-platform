@@ -2,6 +2,7 @@ package at.mediaRatingsPlatform.service;
 
 import at.mediaRatingsPlatform.dao.MediaDao;
 import at.mediaRatingsPlatform.dao.RatingDao;
+import at.mediaRatingsPlatform.exception.NotFoundException;
 import at.mediaRatingsPlatform.model.*;
 
 import java.util.*;
@@ -17,6 +18,9 @@ public class RecommendationService {
     }
 
     public List<Media> getRecommendations(User user) {
+        if (user == null)
+            throw new NotFoundException("User not found");
+
         // Define favorite genres of the user
         Set<GenreEnum> likedGenres = ratingDao.getAll().stream()
                 .filter(r -> r.getUserId() == user.getId())
