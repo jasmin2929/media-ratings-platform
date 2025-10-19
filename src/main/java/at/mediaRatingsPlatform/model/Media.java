@@ -20,9 +20,13 @@ public class Media {
     private int releaseYear;
     private ArrayList<GenreEnum> genreList;
     private int ageRestriction;
-    private LocalDateTime creationTime;
-    private LocalDateTime lastUpdTime;
+    private LocalDateTime creationTime = LocalDateTime.now();
+    private LocalDateTime lastUpdTime = LocalDateTime.now();
 
     private int totalLikes;
     private ArrayList<Rating> ratingList;
+
+    public void touch() {
+        this.lastUpdTime = LocalDateTime.now();
+    }
 }

@@ -13,6 +13,10 @@ public class User {
     private UUID id;
     private String username;
     private String passwordHash;
-    private LocalDateTime creationTime;
-    private LocalDateTime lastUpdTime;
+    private LocalDateTime creationTime = LocalDateTime.now();
+    private LocalDateTime lastUpdTime = LocalDateTime.now();
+
+    public void touch() {
+        this.lastUpdTime = LocalDateTime.now();
+    }
 }

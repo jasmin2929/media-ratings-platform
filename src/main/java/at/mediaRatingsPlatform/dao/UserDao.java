@@ -14,6 +14,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Handles user creation, lookup by username, and JWT token management.
  */
 public class UserDao {
+
+    private static final UserDao instance = new UserDao();
+
+    private UserDao() {}
+
+    public static UserDao getInstance() {
+        return instance;
+    }
+
     private final Map<UUID, User> users = new HashMap<>();
 
     /**

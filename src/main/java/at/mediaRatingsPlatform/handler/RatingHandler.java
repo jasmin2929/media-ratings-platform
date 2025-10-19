@@ -10,8 +10,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.EnumSet;
 import java.util.UUID;
 
@@ -26,19 +25,18 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange ex) throws IOException {
 
-        // validate methods
-        if (!validateMethods(exchange, EnumSet.of(HttpMethodEnum.GET, HttpMethodEnum.POST, HttpMethodEnum.PUT))) {
-            return; // 405 already handled by validateMethod
+        // Validate allowed HTTP methods
+        if (!validateMethods(ex, EnumSet.of(HttpMethodEnum.GET, HttpMethodEnum.POST, HttpMethodEnum.PUT))) {
+            return; // 405 already handled
         }
 
-        withAuthenticatedUser(exchange, authService, (ex, user) -> {
+        withAuthenticatedUser(ex, authService, (exchange, user) -> {
             try {
-                HttpMethodEnum method = HttpMethodEnum.fromString(ex.getRequestMethod());
-
+                HttpMethodEnum method = HttpMethodEnum.fromString(exchange.getRequestMethod());
                 if (method == null) {
-                    safeError(ex, 405, "Method not allowed");
+                    safeError(exchange, 405, "Method not allowed");
                     return;
                 }
 
@@ -47,13 +45,14 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
 
                 // Handle each HTTP method
                 switch (method) {
+                    // ============================================================
+                    // POST -> Create a new rating
+                    // ============================================================
                     case POST -> {
-                        // Parse request body for new rating
-                        Map<String, Object> body = JsonUtil.readJson(ex, Map.class);
-                        // Parse UUID mediaId
+                        Map<String, Object> body = JsonUtil.readJson(exchange, Map.class);
                         String mediaIdStr = (String) body.get("mediaId");
                         if (mediaIdStr == null) {
-                            safeError(ex, 400, "Missing mediaId");
+                            safeError(exchange, 400, "Missing mediaId");
                             return;
                         }
 
@@ -61,7 +60,7 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                         try {
                             mediaId = UUID.fromString(mediaIdStr);
                         } catch (IllegalArgumentException e) {
-                            safeError(ex, 400, "Invalid mediaId format (expected UUID)");
+                            safeError(exchange, 400, "Invalid mediaId format (expected UUID)");
                             return;
                         }
 
@@ -69,110 +68,99 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                         String comment = (String) body.get("comment");
 
                         Rating r = ratingService.create(mediaId, stars, comment, user);
-                        respond(ex, 201, r);
+                        respond(exchange, 201, r);
                     }
 
+                    // ============================================================
+                    // GET -> Retrieve ratings by mediaId or userId
+                    // ============================================================
                     case GET -> {
-                        // two cases: get ratings of a user or get ratings of a media
-                        if (query != null && query.contains("mediaId=")) {
+                        if (query == null || query.isEmpty()) {
+                            safeError(exchange, 400, "Missing query parameter (mediaId or userId required)");
+                            return;
+                        }
 
+                        Map<String, String> params = QueryUtil.parseQuery(query);
+
+                        if (query.contains("mediaId=")) {
                             String mediaIdParam = QueryUtil.parseQuery(query).get("mediaId");
-                            if (mediaIdParam == null) return;
-
-                            UUID mediaId;
-                            try {
-                                mediaId = UUID.fromString(mediaIdParam);
-                            } catch (IllegalArgumentException e) {
-                                safeError(ex, 400, "Invalid mediaId format (expected UUID)");
+                            if (mediaIdParam == null) {
+                                safeError(ex, 400, "Missing mediaId");
                                 return;
                             }
-
+                            UUID mediaId = UUID.fromString(mediaIdParam);
                             List<Rating> ratings = ratingService.getAllByMediaId(mediaId);
                             respond(exchange, 200, ratings);
-                        } else if (query != null && query.contains("userId=")) {
+                        }
+                        else if (query.contains("userId=")) {
                             String userIdParam = QueryUtil.parseQuery(query).get("userId");
-                            if (userIdParam == null) return;
-
-                            UUID userId;
-                            try {
-                                userId = UUID.fromString(userIdParam);
-                            } catch (IllegalArgumentException e) {
-                                safeError(ex, 400, "Invalid userId format (expected UUID)");
+                            if (userIdParam == null) {
+                                safeError(exchange, 400, "Missing userId");
                                 return;
                             }
+                            UUID userId = UUID.fromString(userIdParam);
+                            System.out.println("Received userId query: " + userId);
 
                             List<Rating> ratings = ratingService.getAllByUserId(userId);
                             respond(exchange, 200, ratings);
-                        } else {
-                            error(exchange, 400, "Need mediaId or userId query parameter");
+                        }
+                        else {
+                            safeError(exchange, 400, "Invalid query parameter (expected mediaId or userId)");
                         }
                     }
 
+                    // ============================================================
+                    // PUT -> Update, like, or confirm rating
+                    // ============================================================
                     case PUT -> {
                         // TODO: put id into body
                         // TODO: split into ratingConfirm und ratingLike handler
                         // Path could be /api/ratings/{id} or /api/ratings/{id}/like or /api/ratings/{id}/confirm
                         // Extract {id} and sob-action-segment from path
+                        // e.g. for parts: ["", "api", "ratings", "{id}", "like"]
                         String[] parts = path.split("/");
-                        // e.g.: "", "api", "ratings", "{id}"
                         if (parts.length < 5) {
-                            // no sub path -> basic update
                             Map<String, Object> body = JsonUtil.readJson(exchange, Map.class);
-
                             String ratingIdStr = (String) body.get("ratingId");
                             if (ratingIdStr == null) {
                                 safeError(exchange, 400, "Missing ratingId");
                                 return;
                             }
-
-                            UUID ratingId;
-                            try {
-                                ratingId = UUID.fromString(ratingIdStr);
-                            } catch (IllegalArgumentException e) {
-                                safeError(exchange, 400, "Invalid ratingId format (expected UUID)");
-                                return;
-                            }
+                            UUID ratingId = UUID.fromString(ratingIdStr);
                             int stars = (int) body.get("stars");
                             String comment = (String) body.get("comment");
                             Rating updated = ratingService.update(ratingId, user, stars, comment);
                             respond(exchange, 200, updated);
+                            return;
                         }
-                        // e.g.: "", "api", "ratings", "{id}", "like"
-                        else {
-                            // Sub-action like /api/ratings/{id}/like or /confirm
-                            UUID ratingId;
-                            try {
-                                ratingId = UUID.fromString(parts[4]);
-                            } catch (IllegalArgumentException e) {
-                                safeError(exchange, 400, "Invalid ratingId format (expected UUID)");
-                                return;
-                            }
 
-                            String action = parts.length > 5 ? parts[5] : null;
-                            if (action == null) {
-                                safeError(exchange, 400, "Missing action segment");
-                                return;
-                            }
+                        // Handle sub-actions like /api/ratings/{id}/like or /confirm
+                        UUID ratingId = UUID.fromString(parts[3]);
+                        String action = parts.length > 4 ? parts[4] : null;
 
-                            switch (action) {
-                                case "like" -> {
-                                    ratingService.like(ratingId);
-                                    respond(exchange, 200, Map.of("status", "liked"));
-                                }
-                                case "confirm" -> {
-                                    Rating confirmed = ratingService.confirm(ratingId, user.getId());
-                                    respond(exchange, 200, confirmed);
-                                }
-                                default -> safeError(exchange, 400, "Unknown action: " + action);
+                        if (action == null) {
+                            safeError(exchange, 400, "Missing action segment");
+                            return;
+                        }
+
+                        switch (action) {
+                            case "like" -> {
+                                ratingService.like(ratingId);
+                                respond(exchange, 200, Map.of("status", "liked"));
                             }
+                            case "confirm" -> {
+                                Rating confirmed = ratingService.confirm(ratingId, user.getId());
+                                respond(exchange, 200, confirmed);
+                            }
+                            default -> safeError(exchange, 400, "Unknown action: " + action);
                         }
                     }
 
-                    default -> safeError(ex, 405, "Method not allowed");
+                    default -> safeError(exchange, 405, "Method not allowed");
                 }
 
             } catch (Exception e) {
-                safeError(ex, 400, e.getMessage());
+                safeError(exchange, 400, e.getMessage());
             }
         });
     }

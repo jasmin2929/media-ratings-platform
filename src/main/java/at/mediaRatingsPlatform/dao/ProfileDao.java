@@ -7,17 +7,36 @@ import java.util.*;
 
 // TODO: extend from AbstractDao and use unique ids for profile
 public class ProfileDao {
+    private static final ProfileDao instance = new ProfileDao();
+
+    private ProfileDao() {}
+
+    public static ProfileDao getInstance() {
+        return instance;
+    }
+
     private final Map<UUID, Profile> profiles = new HashMap<>();
 
-    public Profile create(User user) {
+    public Profile create(UUID userId) {
         Profile profile = new Profile();
-        profile.setUser(user);
-        profiles.put(user.getId(), profile);
+        profile.setId(UUID.randomUUID());
+        profile.setUserId(userId);
+        profile.setCreationTime(java.time.LocalDateTime.now());
+        profile.setLastUpdTime(java.time.LocalDateTime.now());
+        profiles.put(profile.getId(), profile);
         return profile;
     }
 
+    public Profile getById(UUID id) {
+        return profiles.get(id);
+    }
+
     public Profile getByUserId(UUID userId) {
-        return profiles.get(userId);
+        return profiles.values()
+                .stream()
+                .filter(p -> p.getUserId().equals(userId))
+                .findFirst()
+                .orElse(null);
     }
     /*
     public List<Profile> getAll() {
@@ -25,12 +44,13 @@ public class ProfileDao {
     }
     */
 
-    // TODO: change why sometimes param id and sometimes profile or user
     public void update(Profile profile) {
-        profiles.put(profile.getUser().getId(), profile);
+        if (profile == null || profile.getId() == null) return;
+        profile.touch();
+        profiles.put(profile.getId(), profile);
     }
 
-    public void delete(UUID userId) {
-        profiles.remove(userId);
+    public void delete(UUID id) {
+        profiles.remove(id);
     }
 }

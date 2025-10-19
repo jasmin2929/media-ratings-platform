@@ -18,12 +18,16 @@ public class Rating {
     private String comment;
 
     private RatingStatusEnum status;
-    private LocalDateTime creationTime;
-    private LocalDateTime lastUpdTime;
+    private LocalDateTime creationTime = LocalDateTime.now();
+    private LocalDateTime lastUpdTime = LocalDateTime.now();
     private int totalLikes;
 
     //Increments the total number of likes by one.
     public void incrementLikes() {
         this.totalLikes++;
+    }
+
+    public void touch() {
+        this.lastUpdTime = LocalDateTime.now();
     }
 }

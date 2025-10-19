@@ -13,15 +13,15 @@ public class Main {
         System.out.println("Starting MediaRatingsPlatform server...");
 
         // --- Initialize DAOs ---
-        UserDao userDao = new UserDao();
-        RatingDao ratingDao = new RatingDao();
-        MediaDao mediaDao = new MediaDao();
-        FavoriteDao favoriteDao = new FavoriteDao();
-        ProfileDao profileDao = new ProfileDao();
+        UserDao userDao = UserDao.getInstance();
+        RatingDao ratingDao = RatingDao.getInstance();
+        MediaDao mediaDao = MediaDao.getInstance();
+        FavoriteDao favoriteDao = FavoriteDao.getInstance();
+        ProfileDao profileDao = ProfileDao.getInstance();
 
         // --- Initialize Services ---
         LeaderBoardService leaderBoardService = new LeaderBoardService(userDao, ratingDao);
-        AuthService authService = new AuthService(userDao);
+        AuthService authService = new AuthService(userDao, profileDao);
         MediaService mediaService = new MediaService(mediaDao);
         RatingService ratingService = new RatingService(ratingDao, mediaDao);
         ProfileService profileService = new ProfileService(profileDao, userDao);
@@ -37,7 +37,7 @@ public class Main {
         server.createContext("/api/media", new MediaHandler(authService, mediaService));
         server.createContext("/api/ratings", new RatingHandler(authService, ratingService));
         server.createContext("/api/ratings/", new RatingHandler(authService, ratingService));
-        server.createContext("/api/users/profile", new ProfileHandler(profileService));
+        server.createContext("/api/profile", new ProfileHandler(authService, profileService));
         server.createContext("/api/favorites", new FavoriteHandler(authService, favoriteService));
         server.createContext("/api/leaderboard", new LeaderboardHandler(leaderBoardService));
         server.createContext("/api/recommendations", new RecommendationHandler(authService, recommendationService));

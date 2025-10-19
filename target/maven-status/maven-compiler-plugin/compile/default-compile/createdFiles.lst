@@ -13,6 +13,7 @@ at\mediaRatingsPlatform\dao\UserDao.class
 at\mediaRatingsPlatform\handler\MediaHandler$1.class
 at\mediaRatingsPlatform\model\Rating.class
 at\mediaRatingsPlatform\model\Profile.class
+at\mediaRatingsPlatform\handler\ProfileHandler$1.class
 at\mediaRatingsPlatform\Main.class
 at\mediaRatingsPlatform\util\JsonUtil.class
 at\mediaRatingsPlatform\service\RatingService.class

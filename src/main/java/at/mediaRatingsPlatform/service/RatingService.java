@@ -22,7 +22,7 @@ public class RatingService {
     }
 
 
-    public Rating create(UUID mediaId, int stars, String comment, User u){
+    public Rating create(UUID mediaId, int stars, String comment, User user){
         Media media = mediaDao.getById(mediaId);
         if (media == null) throw new RuntimeException("Media not found");
 
@@ -30,7 +30,7 @@ public class RatingService {
         rating.setMediaId(mediaId);
         rating.setStars(stars);
         rating.setComment(comment);
-        rating.setUserId(u.getId());
+        rating.setUserId(user.getId());
         rating.setStatus(RatingStatusEnum.PENDING);
 
         //media.getRatingList().add(rating);
@@ -43,7 +43,8 @@ public class RatingService {
         Rating rating = ratingDao.getById(ratingId);
         if (rating == null)
             throw new RuntimeException("Rating not found");
-        if (rating.getUserId() != userId)
+        Media media = mediaDao.getById(rating.getMediaId());
+        if (!media.getUserId().equals(userId))
             throw new RuntimeException("Unauthorized");
         rating.setStatus(RatingStatusEnum.CONFIRMED);
         ratingDao.update(ratingId, rating);
@@ -97,9 +98,7 @@ public class RatingService {
 
     // Get all ratings of a user
     public List<Rating> getAllByUserId(UUID userId) {
-        return ratingDao.getAll().stream()
-                .filter(r -> r.getUserId().equals(userId))
-                .collect(Collectors.toList());
+        return ratingDao.getAllByUserId(userId);
     }
 
 

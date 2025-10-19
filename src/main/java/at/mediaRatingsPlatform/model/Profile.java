@@ -3,6 +3,7 @@ package at.mediaRatingsPlatform.model;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
 
 @Data // Generates getters, setters, toString(), equals(), and hashCode() automatically for all fields
@@ -11,15 +12,16 @@ import java.util.ArrayList;
 public class Profile {
 
     // --- Basic Information ---
-    private User user;
-    private LocalDateTime creationTime;
-    private LocalDateTime lastUpdTime;
+    private UUID id;
+    private UUID userId;
+    private LocalDateTime creationTime = LocalDateTime.now();
+    private LocalDateTime lastUpdTime = LocalDateTime.now();
 
     // --- Statistics ---
     private int totalRatings;
     private double averageScore;
     private GenreEnum favouriteGenre;
-    private ArrayList<Media> favouriteMediaList;
+    private ArrayList<Media> favouriteMediaList = new ArrayList<>();
 
     // --- Optional Fields ---
     private String bio;
@@ -43,5 +45,9 @@ public class Profile {
      */
     public void removeFavorite(Media media) {
         favouriteMediaList.remove(media);
+    }
+
+    public void touch() {
+        this.lastUpdTime = LocalDateTime.now();
     }
 }

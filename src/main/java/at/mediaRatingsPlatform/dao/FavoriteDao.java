@@ -7,6 +7,14 @@ import java.util.*;
  * Stores favorites as "userId:mediaId" strings in a Set.
  */
 public class FavoriteDao {
+    private static final FavoriteDao instance = new FavoriteDao();
+
+    private FavoriteDao() {}
+
+    public static FavoriteDao getInstance() {
+        return instance;
+    }
+
     // Storage for favorites in the format "userId:mediaId"
     private final Set<String> favorites = new HashSet<>();
 

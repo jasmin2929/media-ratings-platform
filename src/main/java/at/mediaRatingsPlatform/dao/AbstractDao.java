@@ -11,8 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractDao<T> {
     // Storage for entities using their ID as the key
     protected final Map<UUID, T> entities = new HashMap<>();
-    // Atomic sequence to generate unique IDs
-    protected final AtomicInteger seq = new AtomicInteger(1);
 
     // Abstract because each DAO must define how the entity ID is assigned and stored.
     public abstract T create(T entity);

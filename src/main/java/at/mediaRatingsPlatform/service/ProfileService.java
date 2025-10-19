@@ -5,6 +5,8 @@ import at.mediaRatingsPlatform.dao.UserDao;
 import at.mediaRatingsPlatform.model.Profile;
 import at.mediaRatingsPlatform.model.User;
 
+import java.util.UUID;
+
 public class ProfileService {
     private final ProfileDao profileDao;
     private final UserDao userDao;
@@ -14,28 +16,25 @@ public class ProfileService {
         this.userDao = userDao;
     }
 
-    // TODO: why not get by id?
-    public Profile getByUsername(String username) {
-        User user = userDao.getByUsername(username);
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        Profile profile = profileDao.getByUserId(user.getId());
+    /**
+     * Returns the Profile for a given userId.
+     * Creates a new one if it doesn’t exist yet.
+     */
+    public Profile getByUserId(UUID userId) {
+        Profile profile = profileDao.getByUserId(userId);
         if (profile == null) {
-            // TODO: seperate create method
-            // Falls beim Registrieren kein Profil erstellt wurde, hier fallback
-            profile = profileDao.create(user);
+            profile = profileDao.create(userId);
         }
         return profile;
     }
 
-    public Profile update(String username, String bio, String avatarUrl) {
-        User user = userDao.getByUsername(username);
-        if (user == null) throw new RuntimeException("User not found");
-
-        Profile profile = profileDao.getByUserId(user.getId());
+    /**
+     * Updates the Profile for a given userId.
+     */
+    public Profile update(UUID userId, String bio, String avatarUrl) {
+        Profile profile = profileDao.getByUserId(userId);
         if (profile == null) {
-            profile = profileDao.create(user);
+            profile = profileDao.create(userId);
         }
 
         profile.setBio(bio);
@@ -43,5 +42,13 @@ public class ProfileService {
         profileDao.update(profile);
 
         return profile;
+    }
+
+    public boolean delete(UUID userId) {
+        Profile profile = profileDao.getByUserId(userId);
+        if (profile == null) return false;
+
+        profileDao.delete(profile.getId());
+        return true;
     }
 }
