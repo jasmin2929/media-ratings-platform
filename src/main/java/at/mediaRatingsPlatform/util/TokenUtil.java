@@ -1,5 +1,6 @@
 package at.mediaRatingsPlatform.util;
 
+import at.mediaRatingsPlatform.exception.UnauthorizedException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -58,7 +59,9 @@ public class TokenUtil {
                     .getSubject();
             return UUID.fromString(id);
         } catch (JwtException e) {
-            throw new RuntimeException("Invalid token", e);
+            throw new UnauthorizedException("Invalid or expired token");
+        } catch (IllegalArgumentException e) {
+            throw new UnauthorizedException("Malformed token");
         }
     }
 }

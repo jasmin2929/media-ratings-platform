@@ -1,5 +1,7 @@
 package at.mediaRatingsPlatform.util;
 
+import at.mediaRatingsPlatform.exception.BadRequestException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,12 +20,16 @@ public class QueryUtil {
         Map<String, String> params = new HashMap<>();
         if (query == null || query.isBlank()) return params;
 
-        String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            String[] kv = pair.split("=", 2); // limit=2 ensures value with '=' is preserved
-            if (kv.length == 2) {
-                params.put(kv[0], kv[1]);
+        try {
+            String[] pairs = query.split("&");
+            for (String pair : pairs) {
+                String[] kv = pair.split("=", 2); // limit=2 ensures value with '=' is preserved
+                if (kv.length == 2) {
+                    params.put(kv[0], kv[1]);
+                }
             }
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid query format: " + e.getMessage());
         }
         return params;
     }
