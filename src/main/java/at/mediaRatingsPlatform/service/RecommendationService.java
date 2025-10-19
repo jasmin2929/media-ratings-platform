@@ -22,7 +22,7 @@ public class RecommendationService {
             throw new NotFoundException("User not found");
 
         // Define favorite genres of the user
-        Set<GenreEnum> likedGenres = ratingDao.getAll().stream()
+        Set<Genre> likedGenres = ratingDao.getAll().stream()
                 .filter(r -> r.getUserId() == user.getId())
                 .filter(r -> r.getStars() >= 4 && r.getStatus() == RatingStatusEnum.CONFIRMED)
                 .map(r -> mediaDao.getById(r.getMediaId()))
@@ -30,9 +30,18 @@ public class RecommendationService {
                 .flatMap(m -> m.getGenreList().stream())
                 .collect(Collectors.toSet());
 
+        if (likedGenres.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // recommend similar genres
         return mediaDao.getAll().stream()
-                .filter(m -> !likedGenres.isEmpty() && m.getGenreList().stream().anyMatch(likedGenres::contains))
+                .filter(m -> m.getGenreList() != null && !m.getGenreList().isEmpty())
+                .filter(m -> m.getGenreList().stream().anyMatch(
+                        g -> likedGenres.stream().anyMatch(
+                                lg -> lg.getName().equalsIgnoreCase(g.getName())
+                        )
+                ))
                 .limit(3)
                 .collect(Collectors.toList());
     }

@@ -20,7 +20,7 @@ public class Profile {
     // --- Statistics ---
     private int totalRatings;
     private double averageScore;
-    private GenreEnum favouriteGenre;
+    private Genre favouriteGenre;
     private ArrayList<Media> favouriteMediaList = new ArrayList<>();
 
     // --- Optional Fields ---

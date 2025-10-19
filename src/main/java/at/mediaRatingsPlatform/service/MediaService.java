@@ -3,9 +3,9 @@ package at.mediaRatingsPlatform.service;
 import at.mediaRatingsPlatform.dao.MediaDao;
 import at.mediaRatingsPlatform.exception.ForbiddenException;
 import at.mediaRatingsPlatform.exception.NotFoundException;
-import at.mediaRatingsPlatform.model.GenreEnum;
+import at.mediaRatingsPlatform.model.Genre;
 import at.mediaRatingsPlatform.model.Media;
-import at.mediaRatingsPlatform.model.MediaTypeEnum;
+import at.mediaRatingsPlatform.model.MediaType;
 import at.mediaRatingsPlatform.model.User;
 
 import java.util.Comparator;
@@ -54,16 +54,17 @@ public class MediaService {
         dao.delete(id);
     }
 
-    public List<Media> filterByGenre(GenreEnum genre) {
+    public List<Media> filterByGenre(Genre genre) {
         return dao.getAll().stream()
-                .filter(m -> m.getGenreList() != null && m.getGenreList().contains(genre))
+                .filter(m -> m.getGenreList() != null && m.getGenreList().stream()
+                        .anyMatch(g -> g.getName().equalsIgnoreCase(genre.getName())))
                 .collect(Collectors.toList());
     }
 
 
-    public List<Media> filterByType(MediaTypeEnum type) {
+    public List<Media> filterByType(MediaType type) {
         return dao.getAll().stream()
-                .filter(m -> m.getMediaType() == type)
+                .filter(m -> m.getMediaType() != null && m.getMediaType().getName().equalsIgnoreCase(type.getName()))
                 .collect(Collectors.toList());
     }
 

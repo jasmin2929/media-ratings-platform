@@ -16,9 +16,9 @@ public class Media {
     private UUID userId;
     private String title;
     private String description;
-    private MediaTypeEnum mediaType;
+    private MediaType mediaType;
     private int releaseYear;
-    private ArrayList<GenreEnum> genreList;
+    private ArrayList<Genre> genreList;
     private int ageRestriction;
     private LocalDateTime creationTime = LocalDateTime.now();
     private LocalDateTime lastUpdTime = LocalDateTime.now();

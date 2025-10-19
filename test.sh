@@ -80,11 +80,12 @@ echo -e "\n"
 declare -A MEDIA_IDS
 
 MEDIA_PAYLOADS=(
-  '{"title":"Inception","description":"Dream movie","mediaType":"MOVIE","releaseYear":2010,"genreList":["SCIFI","ACTION"],"ageRestriction":12}'
-  '{"title":"The Office","description":"Comedy series","mediaType":"SERIES","releaseYear":2005,"genreList":["COMEDY"],"ageRestriction":6}'
-  '{"title":"Resident Evil","description":"Horror Game","mediaType":"GAME","releaseYear":2002,"genreList":["HORROR","ACTION"],"ageRestriction":16}'
-  '{"title":"Planet Earth","description":"Documentary about nature","mediaType":"MOVIE","releaseYear":2006,"genreList":["DOCUMENTARY"],"ageRestriction":0}'
+  '{"title":"Inception","description":"Dream movie","mediaType":{"name":"MOVIE"},"releaseYear":2010,"genreList":[{"name":"SCIFI"},{"name":"ACTION"}],"ageRestriction":12}'
+  '{"title":"The Office","description":"Comedy series","mediaType":{"name":"SERIES"},"releaseYear":2005,"genreList":[{"name":"COMEDY"}],"ageRestriction":6}'
+  '{"title":"Resident Evil","description":"Horror Game","mediaType":{"name":"GAME"},"releaseYear":2002,"genreList":[{"name":"HORROR"},{"name":"ACTION"}],"ageRestriction":16}'
+  '{"title":"Planet Earth","description":"Documentary about nature","mediaType":{"name":"MOVIE"},"releaseYear":2006,"genreList":[{"name":"DOCUMENTARY"}],"ageRestriction":0}'
 )
+
 
 i=1
 for payload in "${MEDIA_PAYLOADS[@]}"
