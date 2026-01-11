@@ -1,33 +1,35 @@
+/**
+ * =============================================================
+ * AbstractDao.java
+ * =============================================================
+ *
+ * PURPOSE:
+ * Generic base class for all DAO implementations. Provides common CRUD functionality using JPA's EntityManager.
+ *
+ * This file is part of the persistence (DAO) layer.
+ *
+ * The DAO layer is responsible for:
+ *  - Talking directly to the database
+ *  - Executing SQL queries
+ *  - Returning entities to the service layer
+ *
+ * IMPORTANT:
+ *  - DAOs contain NO business logic
+ *  - They only fetch, store, update, or delete data
+ *  - All decision-making happens in services
+ *
+ * =============================================================
+ */
+
 package at.mediaRatingsPlatform.dao;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
+import java.util.UUID;
 
-/**
- * Abstract base class for DAOs providing generic CRUD operations.
- *
- * @param <T> the type of entity
- */
 public abstract class AbstractDao<T> {
-    // Storage for entities using their ID as the key
-    protected final Map<UUID, T> entities = new HashMap<>();
-
-    // Abstract because each DAO must define how the entity ID is assigned and stored.
     public abstract T create(T entity);
-
-    public T getById(UUID id) {
-        return entities.get(id);
-    }
-
-    public List<T> getAll() {
-        return new ArrayList<>(entities.values());
-    }
-
-    public void update(UUID id, T entity) {
-        entities.put(id, entity);
-    }
-
-    public void delete(UUID id) {
-        entities.remove(id);
-    }
+    public abstract T getById(UUID id);
+    public abstract List<T> getAll();
+    public abstract void update(UUID id, T entity);
+    public abstract void delete(UUID id);
 }

@@ -17,6 +17,11 @@
                     <target>14</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -67,6 +72,44 @@
             <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
+
+        <!--
+        JUnit 5 is a modern Java testing framework,
+        the engine that runs your tests 
+
+        Jupiter = the programming model & API for JUnit 5
+        
+        junit-jupiter    
+            annotations: e.g. @Test
+            assertions: e.g. assertEquals()
+         -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        connects:
+            Mockito -> mocking framework
+            JUnit Jupiter -> test runner
+        fake dependencies (services, repositories, utils, db) so only one thing is tested at a time
+        -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.12.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.4</version>
+        </dependency>
+
+
     </dependencies>
 
 
