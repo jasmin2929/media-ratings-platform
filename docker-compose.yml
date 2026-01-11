@@ -1,0 +1,43 @@
+# docker-compose.yml
+# ==============================================================
+# Media Ratings Platform – Database Infrastructure Definition
+# ==============================================================
+# This file defines and configures external services that your
+# application depends on. In this case, it provisions a PostgreSQL
+# database using Docker.
+#
+# docker-compose allows you to:
+#   - Start services with a single command
+#   - Ensure consistent environments across developers
+#   - Avoid manual database installation on your machine
+# ==============================================================
+services:
+  # --------------------------------------------------------------
+  # Database service
+  # --------------------------------------------------------------
+  # This service runs a PostgreSQL database inside a Docker container.
+  # Your backend application connects to this container as if it were
+  # a normal PostgreSQL server.
+  #
+  # Service name "db" becomes the internal hostname:
+  #   db:5432
+  # (important when using Docker networks)
+  # --------------------------------------------------------------
+  db:
+    image: postgres:16 #This is a pre-built Linux environment with PostgreSQL installed
+    environment:
+      POSTGRES_DB: mrp
+      POSTGRES_USER: jess
+      POSTGRES_PASSWORD: jess1password
+    # ------------------------------------------------------------
+    # Port mapping (HOST : CONTAINER)
+    # ------------------------------------------------------------
+    # Exposes PostgreSQL's default port (5432) from inside the
+    # container to your local machine.
+    #
+    # This allows:
+    #   - Your backend app to connect via localhost:5432
+    #     (BE -> localhost:5432 -> Docker -> PostgreSQL)
+    # ------------------------------------------------------------
+    ports:
+      - "5432:5432"
