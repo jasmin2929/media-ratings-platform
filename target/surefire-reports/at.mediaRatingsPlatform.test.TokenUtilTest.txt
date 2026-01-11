@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: at.mediaRatingsPlatform.test.TokenUtilTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.400 s -- in at.mediaRatingsPlatform.test.TokenUtilTest
