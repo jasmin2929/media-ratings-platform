@@ -93,8 +93,6 @@ public class RatingHandler extends AbstractHandler implements HttpHandler {
                     // PUT -> Update, like, or confirm rating
                     // ============================================================
                     case PUT -> {
-                        // TODO: put id into body
-                        // TODO: split into ratingConfirm und ratingLike handler
                         // Path could be /api/ratings/{id} or /api/ratings/{id}/like or /api/ratings/{id}/confirm
                         // Extract {id} and sob-action-segment from path
                         // e.g. for parts: ["", "api", "ratings", "{id}", "like"]

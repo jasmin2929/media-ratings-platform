@@ -1,6 +1,7 @@
 package at.mediaRatingsPlatform.handler;
 
 import at.mediaRatingsPlatform.exception.BadRequestException;
+import at.mediaRatingsPlatform.exception.NotFoundException;
 import at.mediaRatingsPlatform.model.Media;
 import at.mediaRatingsPlatform.model.User;
 import at.mediaRatingsPlatform.service.AuthService;
@@ -50,7 +51,7 @@ public class MediaHandler extends AbstractHandler implements HttpHandler {
                             UUID id = UUID.fromString(query.split("=")[1]);
                             Media media = mediaService.get(id);
                             if (media == null)
-                                throw new BadRequestException("Media not found");
+                                throw new NotFoundException("Media not found");
                             respond(exchange, 200, media);
                         } else {
                             List<Media> all = mediaService.list();

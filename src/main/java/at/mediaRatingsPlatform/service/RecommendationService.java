@@ -23,7 +23,7 @@ public class RecommendationService {
 
         // Define favorite genres of the user
         Set<Genre> likedGenres = ratingDao.getAll().stream()
-                .filter(r -> r.getUserId() == user.getId())
+                .filter(r -> user.getId().equals(r.getUserId()))
                 .filter(r -> r.getStars() >= 4 && r.getStatus() == RatingStatusEnum.CONFIRMED)
                 .map(r -> mediaDao.getById(r.getMediaId()))
                 .filter(Objects::nonNull)

@@ -15,7 +15,6 @@ public class JsonUtil {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     // Parse JSON to object
-    // TODO: throw json exceptions of MAPPER.readValue
     public static <T> T readJson(HttpExchange ex, Class<T> clazz) {
         try {
             return MAPPER.readValue(ex.getRequestBody(), clazz);

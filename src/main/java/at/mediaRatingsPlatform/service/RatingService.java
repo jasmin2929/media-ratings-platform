@@ -29,26 +29,37 @@ public class RatingService {
         if (media == null)
             throw new NotFoundException("Media not found");
 
-        Rating rating = new Rating();
-        rating.setMediaId(mediaId);
-        rating.setStars(stars);
-        rating.setComment(comment);
-        rating.setUserId(user.getId());
-        rating.setStatus(RatingStatusEnum.PENDING);
+        // Enforce: one rating per user per media (editable)
+        Rating existing = ratingDao.getAllByUserId(user.getId()).stream()
+            .filter(r -> r.getMediaId().equals(mediaId))
+            .findFirst()
+            .orElse(null);
 
-        //media.getRatingList().add(rating);
+        if (existing != null) {
+            existing.setStars(stars);
+            existing.setComment(comment);
+            existing.setStatus(RatingStatusEnum.PENDING); // comment must be re-confirmed after edit
+            ratingDao.update(existing.getId(), existing);
+            return existing;
+        }
+            Rating rating = new Rating();
+            rating.setMediaId(mediaId);
+            rating.setStars(stars);
+            rating.setComment(comment);
+            rating.setUserId(user.getId());
+            rating.setStatus(RatingStatusEnum.PENDING);
+        
         return ratingDao.create(rating);
+
     }
 
-    // TODO: Add ratingStatus to update method, 1. dont repeat, 2. what about other statuses?
     // Confirm a rating (changes visibility)
     public Rating confirm(UUID ratingId, UUID userId) {
         Rating rating = ratingDao.getById(ratingId);
         if (rating == null)
             throw new NotFoundException("Rating not found");
 
-        Media media = mediaDao.getById(rating.getMediaId());
-        if (!media.getUserId().equals(userId))
+        if (!rating.getUserId().equals(userId))
             throw new ForbiddenException("You are not allowed to confirm this rating");
 
         rating.setStatus(RatingStatusEnum.CONFIRMED);
@@ -71,7 +82,7 @@ public class RatingService {
     }
 
     // Delete a rating
-    public void delete(UUID ratingId, int userId) {
+    public void delete(UUID ratingId, UUID userId) {
         Rating rating = ratingDao.getById(ratingId);
         if (rating == null)
             throw new NotFoundException("Rating not found");
@@ -81,7 +92,6 @@ public class RatingService {
         ratingDao.delete(ratingId);
     }
 
-    //TODO: unlike a rating or media
     // Like a rating
     public Rating like(UUID ratingId) {
         Rating rating = ratingDao.getById(ratingId);
